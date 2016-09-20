@@ -49,7 +49,7 @@ public class RecognitionActivity extends Activity {
   static final String API_ID = "2d10e1ae";
   static final String API_KEY = "2f5db97d5015d7289e7b8f09718058be";
   static final String API_URL1 = "https://api.nutritionix.com/v1_1/search/";
-  static final String API_URL2 = "?fields=nf_calories&appId=" + API_ID + "&appKey=" + API_KEY;
+  static final String API_URL2 = "?fields=nf_calories,item_name&appId=" + API_ID + "&appKey=" + API_KEY;
   //static final String API_URL = "https://api.nutritionix.com/v1_1/search/cheddar%20cheese?fields=item_name%2Citem_id%2Cbrand_name%2Cnf_calories%2Cnf_total_fat&appId=" + API_ID + "&appKey=" + API_KEY;
 
   @Override
@@ -225,8 +225,9 @@ public class RecognitionActivity extends Activity {
             JSONObject jsonObject1 = jsonArray.getJSONObject(0);
             JSONObject jsonObject2 = jsonObject1.optJSONObject("fields");
              String calories = jsonObject2.optString("nf_calories").toString();
+             String name = jsonObject2.optString("item_name").toString();
 
-            textView.setText("My My!!You just enjoyed " + calories + " calories worth of food!!\n\n\n *The calorie count indicated above is per unit sserving of the item present in the photo");
+            textView.setText("Mmmmmmm That " + name + " looks delicious!!\n\nYou just enjoyed " + calories + " calories worth of food!!\n\n\n *The calorie count indicated above is per unit sserving of the item present in the photo");
         } catch(JSONException e) {e.printStackTrace();}
 
     }
