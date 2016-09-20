@@ -159,7 +159,7 @@ public class RecognitionActivity extends Activity {
        // new RetrieveFeedTask().execute();
         int i = b.indexOf(",");
         String c = b.substring(0,i);
-        textView.setText("Tags:\n" + b);
+        textView.setText("Tags:\n" + c);
       } else {
         Log.e(TAG, "Clarifai: " + result.getStatusMessage());
         textView.setText("Sorry, there was an error recognizing your image.");
