@@ -19,8 +19,12 @@ import com.clarifai.api.RecognitionResult;
 import com.clarifai.api.Tag;
 import com.clarifai.api.exception.ClarifaiException;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 import static android.provider.MediaStore.Images.Media;
 
@@ -34,19 +38,25 @@ public class RecognitionActivity extends Activity {
   private static final int CODE_PICK = 1;
 
   private final ClarifaiClient client = new ClarifaiClient(Credentials.CLIENT_ID,
-      Credentials.CLIENT_SECRET);
+          Credentials.CLIENT_SECRET);
   private Button selectButton;
   private ImageView imageView;
   private TextView textView;
+  static final String API_ID = "2d10e1ae";
+  static final String API_KEY = "2f5db97d5015d7289e7b8f09718058be";
+  //static final String API_URL = "https://api.nutritionix.com";
+  static final String API_URL = "https://api.nutritionix.com/v1_1/search/cheddar%20cheese?fields=item_name%2Citem_id%2Cbrand_name%2Cnf_calories%2Cnf_total_fat&appId=" + API_ID + "&appKey=" + API_KEY;
 
-  @Override protected void onCreate(Bundle savedInstanceState) {
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_recognition);
     imageView = (ImageView) findViewById(R.id.image_view);
     textView = (TextView) findViewById(R.id.text_view);
     selectButton = (Button) findViewById(R.id.select_button);
     selectButton.setOnClickListener(new View.OnClickListener() {
-      @Override public void onClick(View v) {
+      @Override
+      public void onClick(View v) {
         // Send an intent to launch the media picker.
         final Intent intent = new Intent(Intent.ACTION_PICK, Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(intent, CODE_PICK);
@@ -54,7 +64,9 @@ public class RecognitionActivity extends Activity {
     });
   }
 
-  @Override protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+
+  @Override
+  protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
     super.onActivityResult(requestCode, resultCode, intent);
     if (requestCode == CODE_PICK && resultCode == RESULT_OK) {
       // The user picked an image. Send it to Clarifai for recognition.
@@ -67,10 +79,13 @@ public class RecognitionActivity extends Activity {
 
         // Run recognition on a background thread since it makes a network call.
         new AsyncTask<Bitmap, Void, RecognitionResult>() {
-          @Override protected RecognitionResult doInBackground(Bitmap... bitmaps) {
+          @Override
+          protected RecognitionResult doInBackground(Bitmap... bitmaps) {
             return recognizeBitmap(bitmaps[0]);
           }
-          @Override protected void onPostExecute(RecognitionResult result) {
+
+          @Override
+          protected void onPostExecute(RecognitionResult result) {
             updateUIForResult(result);
           }
         }.execute(bitmap);
@@ -80,7 +95,9 @@ public class RecognitionActivity extends Activity {
     }
   }
 
-  /** Loads a Bitmap from a content URI returned by the media picker. */
+  /**
+   * Loads a Bitmap from a content URI returned by the media picker.
+   */
   private Bitmap loadBitmapFromUri(Uri uri) {
     try {
       // The image may be large. Load an image that is sized for display. This follows best
@@ -90,7 +107,7 @@ public class RecognitionActivity extends Activity {
       BitmapFactory.decodeStream(getContentResolver().openInputStream(uri), null, opts);
       int sampleSize = 1;
       while (opts.outWidth / (2 * sampleSize) >= imageView.getWidth() &&
-             opts.outHeight / (2 * sampleSize) >= imageView.getHeight()) {
+              opts.outHeight / (2 * sampleSize) >= imageView.getHeight()) {
         sampleSize *= 2;
       }
 
@@ -103,13 +120,15 @@ public class RecognitionActivity extends Activity {
     return null;
   }
 
-  /** Sends the given bitmap to Clarifai for recognition and returns the result. */
+  /**
+   * Sends the given bitmap to Clarifai for recognition and returns the result.
+   */
   private RecognitionResult recognizeBitmap(Bitmap bitmap) {
     try {
       // Scale down the image. This step is optional. However, sending large images over the
       // network is slow and  does not significantly improve recognition performance.
       Bitmap scaled = Bitmap.createScaledBitmap(bitmap, 320,
-          320 * bitmap.getHeight() / bitmap.getWidth(), true);
+              320 * bitmap.getHeight() / bitmap.getWidth(), true);
 
       // Compress the image as a JPEG.
       ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -124,7 +143,10 @@ public class RecognitionActivity extends Activity {
     }
   }
 
-  /** Updates the UI by displaying tags for the given result. */
+
+  /**
+   * Updates the UI by displaying tags for the given result.
+   */
   private void updateUIForResult(RecognitionResult result) {
     if (result != null) {
       if (result.getStatusCode() == RecognitionResult.StatusCode.OK) {
@@ -132,7 +154,9 @@ public class RecognitionActivity extends Activity {
         StringBuilder b = new StringBuilder();
         for (Tag tag : result.getTags()) {
           b.append(b.length() > 0 ? ", " : "").append(tag.getName());
+         
         }
+        new RetrieveFeedTask().execute();
         textView.setText("Tags:\n" + b);
       } else {
         Log.e(TAG, "Clarifai: " + result.getStatusMessage());
@@ -142,5 +166,45 @@ public class RecognitionActivity extends Activity {
       textView.setText("Sorry, there was an error recognizing your image.");
     }
     selectButton.setEnabled(true);
+  }
+
+  class RetrieveFeedTask extends AsyncTask<Void, Void, String> {
+
+    private Exception exception;
+
+    protected void onPreExecute() {
+
+    }
+
+    protected String doInBackground(Void... urls) {
+      // Do some validation here
+
+      try {
+        URL url = new URL(API_URL);
+        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        try {
+          BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+          StringBuilder stringBuilder = new StringBuilder();
+          String line;
+          while ((line = bufferedReader.readLine()) != null) {
+            stringBuilder.append(line).append("\n");
+          }
+          bufferedReader.close();
+          return stringBuilder.toString();
+        } finally {
+          urlConnection.disconnect();
+        }
+      } catch (Exception e) {
+        Log.e("ERROR", e.getMessage(), e);
+        return null;
+      }
+    }
+
+    protected void onPostExecute(String response) {
+      if (response == null) {
+        response = "THERE WAS AN ERROR";
+      }
+      textView.setText(response);
+    }
   }
 }
