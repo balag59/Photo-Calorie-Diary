@@ -152,11 +152,13 @@ public class RecognitionActivity extends Activity {
       if (result.getStatusCode() == RecognitionResult.StatusCode.OK) {
         // Display the list of tags in the UI.
         StringBuilder b = new StringBuilder();
+
         for (Tag tag : result.getTags()) {
-          b.append(b.length() > 0 ? ", " : "").append(tag.getName());
-         
+           b.append(b.length() > 0 ? ", " : "").append(tag.getName());
         }
-        new RetrieveFeedTask().execute();
+       // new RetrieveFeedTask().execute();
+        int i = b.indexOf(",");
+        String c = b.substring(0,i);
         textView.setText("Tags:\n" + b);
       } else {
         Log.e(TAG, "Clarifai: " + result.getStatusMessage());
