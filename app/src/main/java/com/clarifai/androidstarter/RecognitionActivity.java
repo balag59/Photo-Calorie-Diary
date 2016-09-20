@@ -46,7 +46,7 @@ public class RecognitionActivity extends Activity {
   static final String API_KEY = "2f5db97d5015d7289e7b8f09718058be";
   static final String API_URL1 = "https://api.nutritionix.com/v1_1/search/";
   static final String API_URL2 = "?&appId=" + API_ID + "&appKey=" + API_KEY;
-  static final String API_URL = "https://api.nutritionix.com/v1_1/search/cheddar%20cheese?fields=item_name%2Citem_id%2Cbrand_name%2Cnf_calories%2Cnf_total_fat&appId=" + API_ID + "&appKey=" + API_KEY;
+  //static final String API_URL = "https://api.nutritionix.com/v1_1/search/cheddar%20cheese?fields=item_name%2Citem_id%2Cbrand_name%2Cnf_calories%2Cnf_total_fat&appId=" + API_ID + "&appKey=" + API_KEY;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -157,9 +157,12 @@ public class RecognitionActivity extends Activity {
         for (Tag tag : result.getTags()) {
            b.append(b.length() > 0 ? ", " : "").append(tag.getName());
         }
-        int i = b.indexOf(",");
+        int i = 0;
+        for(int j=0;j<3;j++) {
+            i = b.indexOf(",",i+1);
+        }
         String c = b.substring(0,i);
-        new RetrieveFeedTask().execute(c);
+       new RetrieveFeedTask().execute(c);
         //textView.setText("Tags:\n" + c);
       } else {
         Log.e(TAG, "Clarifai: " + result.getStatusMessage());
