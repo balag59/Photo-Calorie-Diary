@@ -19,6 +19,10 @@ import com.clarifai.api.RecognitionResult;
 import com.clarifai.api.Tag;
 import com.clarifai.api.exception.ClarifaiException;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -45,7 +49,7 @@ public class RecognitionActivity extends Activity {
   static final String API_ID = "2d10e1ae";
   static final String API_KEY = "2f5db97d5015d7289e7b8f09718058be";
   static final String API_URL1 = "https://api.nutritionix.com/v1_1/search/";
-  static final String API_URL2 = "?&appId=" + API_ID + "&appKey=" + API_KEY;
+  static final String API_URL2 = "?fields=nf_calories&appId=" + API_ID + "&appKey=" + API_KEY;
   //static final String API_URL = "https://api.nutritionix.com/v1_1/search/cheddar%20cheese?fields=item_name%2Citem_id%2Cbrand_name%2Cnf_calories%2Cnf_total_fat&appId=" + API_ID + "&appKey=" + API_KEY;
 
   @Override
@@ -212,10 +216,19 @@ public class RecognitionActivity extends Activity {
     }
 
     protected void onPostExecute(String response) {
-      if (response == null) {
-        response = "Food item currently not present in the database";
-      }
-     textView.setText(response);
+        if (response == null) {
+            response = "Food item currently not present in the database";
+        }
+        try {
+            JSONObject jsonRootObject = new JSONObject(response);
+            JSONArray jsonArray = jsonRootObject.optJSONArray("hits");
+            JSONObject jsonObject1 = jsonArray.getJSONObject(0);
+            JSONObject jsonObject2 = jsonObject1.optJSONObject("fields");
+             String calories = jsonObject2.optString("nf_calories").toString();
+
+            textView.setText("The number of calories per serving of the dish in your image is " +calories);
+        } catch(JSONException e) {e.printStackTrace();}
+
     }
   }
 }
