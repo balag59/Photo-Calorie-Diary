@@ -44,7 +44,8 @@ public class RecognitionActivity extends Activity {
   private TextView textView;
   static final String API_ID = "2d10e1ae";
   static final String API_KEY = "2f5db97d5015d7289e7b8f09718058be";
-  //static final String API_URL = "https://api.nutritionix.com";
+  static final String API_URL1 = "https://api.nutritionix.com/v1_1/search/";
+  static final String API_URL2 = "?&appId=" + API_ID + "&appKey=" + API_KEY;
   static final String API_URL = "https://api.nutritionix.com/v1_1/search/cheddar%20cheese?fields=item_name%2Citem_id%2Cbrand_name%2Cnf_calories%2Cnf_total_fat&appId=" + API_ID + "&appKey=" + API_KEY;
 
   @Override
@@ -156,10 +157,10 @@ public class RecognitionActivity extends Activity {
         for (Tag tag : result.getTags()) {
            b.append(b.length() > 0 ? ", " : "").append(tag.getName());
         }
-       // new RetrieveFeedTask().execute();
         int i = b.indexOf(",");
         String c = b.substring(0,i);
-        textView.setText("Tags:\n" + c);
+        new RetrieveFeedTask().execute(c);
+        //textView.setText("Tags:\n" + c);
       } else {
         Log.e(TAG, "Clarifai: " + result.getStatusMessage());
         textView.setText("Sorry, there was an error recognizing your image.");
@@ -170,7 +171,8 @@ public class RecognitionActivity extends Activity {
     selectButton.setEnabled(true);
   }
 
-  class RetrieveFeedTask extends AsyncTask<Void, Void, String> {
+  //class RetrieveFeedTask extends AsyncTask<Void, Void, String> {
+   class RetrieveFeedTask extends AsyncTask<String, Void, String> {
 
     private Exception exception;
 
@@ -178,11 +180,15 @@ public class RecognitionActivity extends Activity {
 
     }
 
-    protected String doInBackground(Void... urls) {
+    //protected String doInBackground(Void... urls) {
+    protected String doInBackground(String... urls) {
       // Do some validation here
+        String c = urls[0];
+
 
       try {
-        URL url = new URL(API_URL);
+           URL url = new URL(API_URL1 + urls[0] + API_URL2);
+         //URL url = new URL(API_URL);
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         try {
           BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
@@ -204,9 +210,9 @@ public class RecognitionActivity extends Activity {
 
     protected void onPostExecute(String response) {
       if (response == null) {
-        response = "THERE WAS AN ERROR";
+        response = "Food item currently not present in the database";
       }
-      textView.setText(response);
+     textView.setText(response);
     }
   }
 }
