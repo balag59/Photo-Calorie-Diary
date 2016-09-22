@@ -227,7 +227,7 @@ public class RecognitionActivity extends Activity {
              String calories = jsonObject2.optString("nf_calories").toString();
              String name = jsonObject2.optString("item_name").toString();
 
-            textView.setText("Mmmmmmm That " + name + " looks delicious!!\n\nYou just enjoyed " + calories + " calories worth of food!!\n\n\n *The calorie count indicated above is per unit sserving of the item present in the photo");
+            textView.setText("Mmmmmmm That " + name + " looks delicious!!\n\nYou just enjoyed " + calories + " calories worth of food!!\n\n\n *Note:The calorie count indicated above is per unit serving of the item present in the photo");
         } catch(JSONException e) {e.printStackTrace();}
 
     }
